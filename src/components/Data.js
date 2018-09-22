@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Button from './Button';
 import $ from 'jquery';
 
 class Data extends Component {
@@ -6,19 +7,20 @@ class Data extends Component {
         super(props);
 
         // due to laziness and pure ignorance, beats is the array to store vibration intervals of
-        // navigation.vibrate() and bars is the array to store all the data of segments from the song
+        // navigation.vibrate() and bars is the array to store all the data of bars from the song
         this.state = {name: '', beats: [], bars: [], index: 0, last_duration: 0, last_start: 0, visibility: "visible"};
 
         this.flashData = this.flashData.bind(this);
         this.noFlashData = this.noFlashData.bind(this);
         this.getData = this.getData.bind(this);
+        this.vibrate = this.vibrate.bind(this);
     }
 
     componentDidMount() {
         this.getData();
     }
 
-    flashData(data) {
+    flashData() {
         var TimeOut = setTimeout(this.noFlashData, this.state.last_duration);
 
         if (this.state.index + 1 < this.state.bars.length) {
@@ -26,10 +28,9 @@ class Data extends Component {
         } else {
             clearTimeout(TimeOut);
         }
-        console.log("in Flash");
     }
 
-    noFlashData(data) {
+    noFlashData() {
         
         setTimeout(this.flashData,
             (this.state.bars[this.state.index].start * 1000 - (this.state.last_start + this.state.last_duration))
@@ -44,11 +45,11 @@ class Data extends Component {
     getData() {
         $.ajax({
             // audio analysis info
-            url: "https://api.spotify.com/v1/audio-analysis/5xTtaWoae3wi06K5WfVUUH",
+            url: "https://api.spotify.com/v1/audio-analysis/7qiZfU4dY1lWllzX7mPBI3",
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer BQC0iVWMag3dVXfQ48sqcWFRshbwWIcEz3JGuBxT9G8uDfgPUEE6718LntyLhf0UHPqWwfG7jGsTnGSWQLjk1i3EmTIe4VZtIeCQE3fMk94fRGMzA1v7NVCp5lQvEvAebv-lyBFl7C_KMhB_6Lkw71VkP3IA5dUuF4Si8u2xLR5_GiId5j40V8FO2wStn3ZlGExe3znpas6IXaVASkzmS1QMbaTjryzVrFaryBHTg4qzUG-BCuv3Umk3DuUtS0Pbfbv5jR7kEBbxDg"
+                "Authorization": "Bearer BQAoh0Y5Srg7C-yxdkO3VWN-s2fGAVYfNAr3UxhzHi6zBzgtqVpjlA-X8d1bM6uIApZBiJzSiDMEtUlUpEHyL552-MCOAQXbos9MrbqRZK3qyKxtgs5TfDLaai9kDrYkMJsK0vTDiv-do-Gw7j6K8xmtsNdCYKxAY1HW3FuDBTNAnYe0Xi3z4oo_vWxNnP6j3wH878V4EGkS7d_WqBxp--eWiPKWJ_NJUgaDUPycme3CCXU_jvUYQiVPjCzdG7hV30L0E5hQppgvqg"
             },
             method: "GET",
             success: function(data) {
@@ -56,26 +57,27 @@ class Data extends Component {
 
                 // create beats array
                 for (let i = 0; i < data.segments.length - 1; i++) {
-                    localBeatsArray.push(data.segments[i].duration * 1000,
-                        (data.segments[i + 1].start - (data.segments[i].start + data.segments[i].duration)) * 1000
-                    );
+                    let play = data.segments[i].duration * 1000;
+                    let pause = (data.segments[i + 1].start - (data.segments[i].start + data.segments[i].duration)) * 1000;
+                    
+                    if (pause < 0) {
+                        pause = 0;
+                    }
+
+                    localBeatsArray.push(play, pause);
                 }
-
-                this.setState({beats: localBeatsArray, bars: data.segments});
-                this.noFlashData();
-
-                // vibrate
-                window.navigator.vibrate(localBeatsArray);
+                console.log(localBeatsArray)
+                this.setState({beats: localBeatsArray, bars: data.bars});
             }.bind(this)
         });
 
         // general audio info
         $.ajax({
-            url: "https://api.spotify.com/v1/tracks/5xTtaWoae3wi06K5WfVUUH",
+            url: "https://api.spotify.com/v1/tracks/7qiZfU4dY1lWllzX7mPBI3",
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer BQC0iVWMag3dVXfQ48sqcWFRshbwWIcEz3JGuBxT9G8uDfgPUEE6718LntyLhf0UHPqWwfG7jGsTnGSWQLjk1i3EmTIe4VZtIeCQE3fMk94fRGMzA1v7NVCp5lQvEvAebv-lyBFl7C_KMhB_6Lkw71VkP3IA5dUuF4Si8u2xLR5_GiId5j40V8FO2wStn3ZlGExe3znpas6IXaVASkzmS1QMbaTjryzVrFaryBHTg4qzUG-BCuv3Umk3DuUtS0Pbfbv5jR7kEBbxDg"
+                "Authorization": "Bearer BQAoh0Y5Srg7C-yxdkO3VWN-s2fGAVYfNAr3UxhzHi6zBzgtqVpjlA-X8d1bM6uIApZBiJzSiDMEtUlUpEHyL552-MCOAQXbos9MrbqRZK3qyKxtgs5TfDLaai9kDrYkMJsK0vTDiv-do-Gw7j6K8xmtsNdCYKxAY1HW3FuDBTNAnYe0Xi3z4oo_vWxNnP6j3wH878V4EGkS7d_WqBxp--eWiPKWJ_NJUgaDUPycme3CCXU_jvUYQiVPjCzdG7hV30L0E5hQppgvqg"
             },
             method: "GET",
             success: function(data) {
@@ -85,9 +87,23 @@ class Data extends Component {
         });
     }
 
+    vibrate() {
+        this.noFlashData();
+
+        // enable vibration support
+        navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate;
+        
+        if (navigator.vibrate) {
+            navigator.vibrate(this.state.beats);
+        }
+    }
+
     render() {
         return (
-            <h1 style={{visibility: this.state.visibility}}>{this.state.name}</h1>
+            <div>
+                <h1 style={{visibility: this.state.visibility}}>{this.state.name}</h1>
+                <Button method={this.vibrate} name="Vibrate"/>
+            </div>
         );
     }
 }
