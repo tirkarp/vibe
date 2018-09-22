@@ -30,17 +30,17 @@ class Auth extends Component {
             top = 0;
     
         window.addEventListener("message", function(event) {
-            var hash = event.data;
-            alert("h");
-            if (hash.type === 'access_token') {
+            var hash = JSON.parse(event.data);
+            this.alert("h");
+            if (hash.type == 'access_token') {
                 callback(hash.access_token);
             }
         }, false);
         
-        window.open(url,
-            'Spotify',
-            'menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left
-        );
+        var w = window.open(url,
+                            'Spotify',
+                            'menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left
+                           );
         
     }
 
@@ -59,9 +59,7 @@ class Auth extends Component {
                 .then(function(response) {
                     console.log(response);
                 });
-            });
-
-        
+            });   
     }
 
     render() {
