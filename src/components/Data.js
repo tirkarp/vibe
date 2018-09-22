@@ -4,7 +4,10 @@ import $ from 'jquery';
 class Data extends Component {
     constructor(props) {
         super(props);
-        this.state = {name: '', bars: [], index: 0, last_duration: 0, last_start: 0, visibility: "visible"};
+
+        // due to laziness and pure ignorance, beats is the array to store vibration intervals of
+        // navigation.vibrate() and bars is the array to store all the data of segments from the song
+        this.state = {name: '', beats: [], bars: [], index: 0, last_duration: 0, last_start: 0, visibility: "visible"};
 
         this.flashData = this.flashData.bind(this);
         this.noFlashData = this.noFlashData.bind(this);
@@ -41,31 +44,43 @@ class Data extends Component {
     getData() {
         $.ajax({
             // audio analysis info
-            url: "https://api.spotify.com/v1/audio-analysis/11dFghVXANMlKmJXsNCbNl",
+            url: "https://api.spotify.com/v1/audio-analysis/5xTtaWoae3wi06K5WfVUUH",
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer BQBY-ev40aewQhijUzBGcswcnjsWu-b4lVJpZAF7Yf2QDIBjFolAhmkMilBX9Q9XmddOFNDTmX7Hh43rr-DFFMVLQ4umSErduCgUu-zCI68-yB-7JrHfJyK_NWHLtcCdacEHKj4IIaZ4JwbvxQ_13-OMFKXULXPVw1Vf7tJZ_q8QQhvx6nBAARV_DFSZbstmclEEbjQBOv6Za2hwrs6FB3Xf48SCSSGkhNNuHTmeddXZCN534PrORYBgcDhFoDzurEr5tFBhDcFPrg"
+                "Authorization": "Bearer BQC0iVWMag3dVXfQ48sqcWFRshbwWIcEz3JGuBxT9G8uDfgPUEE6718LntyLhf0UHPqWwfG7jGsTnGSWQLjk1i3EmTIe4VZtIeCQE3fMk94fRGMzA1v7NVCp5lQvEvAebv-lyBFl7C_KMhB_6Lkw71VkP3IA5dUuF4Si8u2xLR5_GiId5j40V8FO2wStn3ZlGExe3znpas6IXaVASkzmS1QMbaTjryzVrFaryBHTg4qzUG-BCuv3Umk3DuUtS0Pbfbv5jR7kEBbxDg"
             },
             method: "GET",
             success: function(data) {
-                this.setState({bars: data.segments});
+                let localBeatsArray = []
+
+                // create beats array
+                for (let i = 0; i < data.segments.length - 1; i++) {
+                    localBeatsArray.push(data.segments[i].duration * 1000,
+                        (data.segments[i + 1].start - (data.segments[i].start + data.segments[i].duration)) * 1000
+                    );
+                }
+
+                this.setState({beats: localBeatsArray, bars: data.segments});
                 this.noFlashData();
+
+                // vibrate
+                window.navigator.vibrate(localBeatsArray);
             }.bind(this)
         });
 
         // general audio info
         $.ajax({
-            url: "https://api.spotify.com/v1/tracks/11dFghVXANMlKmJXsNCbNl",
+            url: "https://api.spotify.com/v1/tracks/5xTtaWoae3wi06K5WfVUUH",
             headers: {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer BQBY-ev40aewQhijUzBGcswcnjsWu-b4lVJpZAF7Yf2QDIBjFolAhmkMilBX9Q9XmddOFNDTmX7Hh43rr-DFFMVLQ4umSErduCgUu-zCI68-yB-7JrHfJyK_NWHLtcCdacEHKj4IIaZ4JwbvxQ_13-OMFKXULXPVw1Vf7tJZ_q8QQhvx6nBAARV_DFSZbstmclEEbjQBOv6Za2hwrs6FB3Xf48SCSSGkhNNuHTmeddXZCN534PrORYBgcDhFoDzurEr5tFBhDcFPrg"
+                "Authorization": "Bearer BQC0iVWMag3dVXfQ48sqcWFRshbwWIcEz3JGuBxT9G8uDfgPUEE6718LntyLhf0UHPqWwfG7jGsTnGSWQLjk1i3EmTIe4VZtIeCQE3fMk94fRGMzA1v7NVCp5lQvEvAebv-lyBFl7C_KMhB_6Lkw71VkP3IA5dUuF4Si8u2xLR5_GiId5j40V8FO2wStn3ZlGExe3znpas6IXaVASkzmS1QMbaTjryzVrFaryBHTg4qzUG-BCuv3Umk3DuUtS0Pbfbv5jR7kEBbxDg"
             },
             method: "GET",
             success: function(data) {
                 this.setState({name: data.name});
-                window.navigator.vibrate(500);
+                
             }.bind(this)
         });
     }
