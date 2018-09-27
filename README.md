@@ -13,4 +13,4 @@ Music streaming platform for the deaf.
 ### In Progress
 - Separate the JavaScript vibration engine and make it an npm package
 - Migrate from React to React Native to avoid vibration limits
-- Manage OAuth and make Vibe work with native Spotify functionalities
+- Manage OAuth and make Vibe work with other Spotify features
