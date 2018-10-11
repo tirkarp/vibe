@@ -1,5 +1,5 @@
 # Vibe
-Music streaming platform for the deaf.
+Music streaming platform for the hearing impaired
 
 ### Prerequisites
 - npm
@@ -12,5 +12,5 @@ Music streaming platform for the deaf.
 
 ### In Progress
 - Separate the JavaScript vibration engine and make it an npm package
-- Migrate from React to React Native to avoid vibration limits
+- Migrate from React to PWA/React Native to avoid vibration limits
 - Manage OAuth and make Vibe work with other Spotify features
